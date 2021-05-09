@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Brian Chavez</title>
+    <link>/</link>
+    <description>Recent content on Brian Chavez</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 09 May 2021 21:13:14 -0500</lastBuildDate><atom:link href="/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Get to Know Me</title>
+      <link>/post/2021/05/09/get-to-know-me/</link>
+      <pubDate>Sun, 09 May 2021 21:13:14 -0500</pubDate>
+      
+      <guid>/post/2021/05/09/get-to-know-me/</guid>
+      <description>I am from Port Isabel, Texas, a small town on the southern Gulf Coast, where I graduated as valedictorian of Port Isabel High School. There, I founded the school’s first pre-medical organization, Future Health Careers Club, and was the president of the Student Body, National Honor Society, and Rotary Interact Club. I earned All-State Academic Elite Football Team Highest Honors and two State Championships in UIL Spelling and Vocabulary. At The University of Texas, I am majoring in Biology in the Health Science Scholars Honors Program with a minor in Kinesiology and Health Education.</description>
+    </item>
+    
+    <item>
+      <title>Hello R Markdown</title>
+      <link>/post/2015/07/23/hello-r-markdown/</link>
+      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      
+      <guid>/post/2015/07/23/hello-r-markdown/</guid>
+      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
+You can embed an R code chunk like this:
+summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+    </item>
+    
+    <item>
+      <title>Computational Biology Project 1</title>
+      <link>/project/project1/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project1/</guid>
+      <description>0. Introduction library(tidyverse) lbwdata1&amp;lt;-read_csv(&amp;quot;Texas Births to Mothers 17 Years of Age and Younger.csv&amp;quot;) bmydata1&amp;lt;-read_csv(&amp;quot;Texas Low Birth Weight Infants.csv&amp;quot;) lbwdata1 ## # A tibble: 254 x 5 ## COUNTY TOTAL_Births_M17 WHITE_Births_M17 BLACK_Births_M17 HISPANIC_Births_… ## &amp;lt;chr&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; ## 1 ANDERSON 12 8 1 3 ## 2 ANDREWS 14 3 0 11 ## 3 ANGELINA 36 14 6 16 ## 4 ARANSAS 7 2 0 5 ## 5 ARCHER 4 3 0 1 ## 6 ARMSTRO… 2 2 0 0 ## 7 ATASCOSA 35 7 0 28 ## 8 AUSTIN 13 6 5 2 ## 9 BAILEY 4 0 0 4 ## 10 BANDERA 1 0 0 1 ## # … with 244 more rows bmydata1 ## # A tibble: 254 x 5 ## COUNTY Total_Low_BW WHITE_Low_BW BLACK_Low_BW HISPANIC_Low_BW ## &amp;lt;chr&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; &amp;lt;dbl&amp;gt; ## 1 ANDERSON 46 28 9 9 ## 2 ANDREWS 20 7 0 13 ## 3 ANGELINA 111 58 21 32 ## 4 ARANSAS 31 18 0 13 ## 5 ARCHER 2 2 0 0 ## 6 ARMSTRONG 3 3 0 0 ## 7 ATASCOSA 53 10 0 43 ## 8 AUSTIN 27 15 4 8 ## 9 BAILEY 8 1 0 7 ## 10 BANDERA 17 10 0 7 ## # … with 244 more rows The goal of my project was to find data that was meaningful to me and one that could help all counties across the state of Texas.</description>
+    </item>
+    
+    <item>
+      <title>Project_2</title>
+      <link>/project/project2/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/project/project2/</guid>
+      <description>0. Introduction The dataset I selected contains variables that could contribute to strokes. This dataset includes gender, age, hypertension, marital status, occupation, residence, average blood glucose, BMI, and smoking status. In this study, we will see how these different factors contribute to strokes and by how much. These variables will help measure the significance of interaction between them and if they are connected to strokes. There are a total of 100 observations.</description>
+    </item>
+    
+    <item>
+      <title>Projects</title>
+      <link>/projects/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/projects/</guid>
+      <description> Check out some of my coding projects below:
+ Wrangling &amp;amp; Exploratory Data Analysis
+ Modeling, Inference, Prediction
+  -- </description>
+    </item>
+    
+    <item>
+      <title>Resume</title>
+      <link>/resume/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/resume/</guid>
+      <description>    </description>
+    </item>
+    
+  </channel>
+</rss>

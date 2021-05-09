@@ -1,0 +1,162 @@
+---
+title: "Computational Biology Project 1"
+author: "Victor Brian Chavez"
+date: "3/28/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = F)
+```
+
+## 0. Introduction
+
+```{R}
+library(tidyverse)
+lbwdata1<-read_csv("Texas Births to Mothers 17 Years of Age and Younger.csv")
+bmydata1<-read_csv("Texas Low Birth Weight Infants.csv")
+lbwdata1
+bmydata1
+```
+
+  The goal of my project was to find data that was meaningful to me and one that could help all counties across the state of Texas. The two datasets I aquired for my project were from the Texas Department of State Health Services. The 2013 datasets were about *Low  Birth Weight Infants* and *Births to Mothers 17 Years of Age and Younger* per county in the state of Texas. Each dataset has the variables of the total number of births (for low weight and mothers 17 years of age or less), then divided into 3 categories of white, black, and hispanic. These were truly interesting to me because when I was in middle school, there were a lot of teen pregnancies which was really common in my area. I pulled this data from the exact year of my experience and hope to learn from my past and educate the present and future. I expect to see a correlation in counties with the most low birth weight infants to also have the highest births to teen pregnant mothers. Additionally, I expect to see the minority groups (black and hispanic) to have a larger amount of teen pregnancies with low child birth weight.
+
+
+## 1. Tidying: Rearranging Wide/Long
+
+```{R}
+library(tidyverse)
+
+lbwdata1 %>% pivot_longer(2:5) %>% separate(name,into=c("ethnicity","var","lowBW"), sep="_") %>% select(-var) %>% select(-lowBW) %>% rename(lowBW = value) ->widedatlbw
+bmydata1 %>% pivot_longer(2:5) %>% separate(name,into=c("ethnicity","var","birthsM17"), sep="_") %>% select(-var) %>% select(-birthsM17) %>% rename(birthsM17 = value)->widedatbmy
+
+widedatlbw
+widedatbmy
+
+widedatlbw %>% pivot_wider(names_from = "ethnicity",values_from="lowBW") 
+widedatbmy %>% pivot_wider(names_from = "ethnicity",values_from="birthsM17") 
+
+
+```
+  In this section, I used the datasets to pivot_longer and pivot_wider. Here, the pivot_longer was used to condense all the different ethnic columns into one single ethnic column. As we can see, the table now has total, white, black and hispanic all summarized in one column with each county and low birth weight/births to mothers 17 years of age or less, respectively. The next approach was to expand this table using the pivot_wider function to create a column for each ethnicity paired with its birth number column for its dataset. As we can see, each column now has it own title and is paired with its county and birth category.  
+
+
+
+## 2. Joining/Merging
+
+```{R}
+lbwdata1 %>% full_join(bmydata1,by="COUNTY")-> joinalbwbmy
+joinalbwbmy
+nrow(joinalbwbmy)
+```
+
+  For this section, I merged the two dataset: *Low  Birth Weight Infants* and *Births to Mothers 17 Years of Age and Younger*. Here the ID variable that was similar for the two datasets were *County*, thus when I used full_join, it was able to fully combine the two datasets. I used full join for this specific project because it retains the original data and did not drop any rows. Since there were no NA variables in this dataset, using full_join did not have an affect on the data, thus retaining the same number of rows for the two datasets we combined. If either dataset contained any NAs, then this would cause problems since we would have to remove some rows, which would lead to a reduced amount of data available for this study.
+
+
+
+## 3. Wrangling
+
+```{R}
+joinalbwbmy %>% filter(Total_Low_BW>=100 & TOTAL_Births_M17>=100)
+joinalbwbmy %>% select(COUNTY,starts_with("B"),starts_with("H"))
+joinalbwbmy %>% arrange(desc(TOTAL_Births_M17),desc(Total_Low_BW))
+joinalbwbmy %>% pivot_longer(7:9) %>% select (1,7,8) %>% separate(name,into=c("ethnicity","var","birthsM17"), sep="_") %>%  unite(var,birthsM17, col = "Births_Category") %>% 
+  rename(births = value) %>% group_by(ethnicity) %>% summarize(mean_lowBW=mean(births,na.rm=T),sd_lowBW=sd(births,na.rm=T))
+joinalbwbmy %>% mutate(TeenMomBirthsPerLowBW=TOTAL_Births_M17/Total_Low_BW)
+joinalbwbmy %>% summarise(mean(Total_Low_BW,na.rm=T))
+
+joinalbwbmy %>% summarize_if(is.numeric,mean)
+joinalbwbmy %>% summarize_if(is.numeric,sd)
+joinalbwbmy %>% summarize_if(is.numeric,var)
+joinalbwbmy %>% summarize(n=n())
+joinalbwbmy %>% summarize_if(is.numeric, list(Q1=quantile), probs=0.25)
+joinalbwbmy %>% summarize_if(is.numeric, list(Q3=quantile), probs=0.75)
+joinalbwbmy %>% summarize_if(is.numeric,min)
+joinalbwbmy %>% summarize_if(is.numeric,max)
+joinalbwbmy %>% summarize_all(n_distinct)
+joinalbwbmy %>% select_if(is.numeric) %>% cor(use="pair")
+
+joinalbwbmy %>% mutate(TOTAL_Births_M17_Cat= case_when(TOTAL_Births_M17>500~"high",
+                                            TOTAL_Births_M17<500 & 100<=TOTAL_Births_M17~"med",
+                                            TOTAL_Births_M17<100~"low")) %>% group_by(TOTAL_Births_M17_Cat) %>% summarize(number_rows=n())
+joinalbwbmy %>% mutate(Total_Low_BW_Cat= case_when(Total_Low_BW>500~"high",
+                                            Total_Low_BW<500 & 100<=Total_Low_BW~"med",
+                                            Total_Low_BW<100~"low")) %>% group_by(Total_Low_BW_Cat) %>% summarize(number_rows=n())
+```
+
+  For this section, I used all six core dplyr functions to generate summary statistics. I used *filter* which helps to choose certain rows of interest. For this example, I extracted rows that only contained 100 or more of low birth weighted infants and with births to mothers younger than 17 per county, thus finding 21 counties that satisfied this function. I used *select* which helps choose certain columns of interest. For this example, I extracted COUNTY, and all rows that started with "B" and "H", which resulted in obtaining COUNTY, BLACK and HISPANIC columns. I used *arrange* which sorts the rows. Here, I arranged both Total Low Birth Weighted infants and Total births to mothers younger than 17 in descending order, thus letting us discover that Harris County had the greatest numbers of these types of births in both. I used *group_by* to designate groups of data. I grouped them by ethnicity and summarized the mean and standard deviation of all three groups. It was interesting to see that the Black ethnic group had the lowest number of infants born underweight, but then the standard deviations disproves this assumption since it is much larger and overlaps each of the three ethnic categories. I used *mutate* to make a new column and calculated the ratio between the number of infants born to 17 and younger mothers to the number of infants born underweight per county. I used *summarize* to get the summary statistic of the mean for the number of infants born underweight per county, which was 126.67.
+  Furthermore, I summarized all my data using *mean, sd, var, n, quantile, min, max, n_distinct, and cor*. These findings were the most interesting! I found that Hispanics had the highest mean of births to teenage mothers as well as having the highest mean for low birth weights of infants! This was shocking to find since Hispanics are only 31% percent of the entire population in Texas. This supports my hypothesis that minorities are higher in these categories. Additionally, I found out that after grouping by two categorical variables that majority of the counties had *"low"* numbers of low birth weights and low numbers of births to teen mothers. It appeared from the data that the higher populations had higher numbers of both categories which makes sense since we did not account for population size per 1000 and scaled because that was not included in the data. 
+
+
+
+## 4. Visualizing
+
+```{R}
+cormat<-joinalbwbmy %>% select_if(is.numeric) %>% cor(use="pair")
+tidycor<- cormat %>% as.data.frame %>% rownames_to_column("var1") %>%
+  pivot_longer(-1,names_to="var2",values_to="correlation")
+tidycor
+
+tidycor%>%ggplot(aes(var1,var2,fill=correlation))+  geom_tile()+  
+  scale_fill_gradient2(low="red",mid="white",high="blue")+ 
+  geom_text(aes(label=round(correlation,2)),color = "white", size = 3)+ theme(axis.text.x = element_text(angle = 90, hjust=1))+ coord_fixed() + labs(title= "        Correlation Heatmap", y="", x = "")
+
+ggplot(head(joinalbwbmy,25),mapping=aes(x=BLACK_Births_M17,y=BLACK_Low_BW,color=COUNTY))+geom_point(size=3)+geom_line(aes(group=COUNTY,linetype=COUNTY),size=2)+
+  labs(title = "TX Counties Black Births to Teen Mothers & Low Birth Weight Infants",y="Black Births to Teen Mothers", x = "Black Low Birth Weight Infants")+scale_x_continuous(breaks=seq(0,100,10))
+
+ggplot(head(widedatlbw,44),aes(COUNTY,lowBW,fill=ethnicity))+geom_bar(stat="summary",position="dodge")+
+  theme(axis.text.x=element_text(angle=90,hjust=1))+
+   labs(title = "Bar Chart of TX Counties Ethnicities to Low Birth Weight Infants",y="Number of Low Birth Weight Infants",
+        x = "Texas County")
+
+```
+
+In Figure 1, I created a correlation heatmap of the each ethnic group for the two categories: *Low Infant Birth Weight and Births to Mothers 17 and younger*. I was really surprised and excited to find that there was a strong correlation to all of the variables. We can see that there are relationships between the same AND different ethnic groups. However, we can see that on the right hand side of the correlation heatmap that the white population had a slightly lesser relationship as compared to the two minority groups. Perhaps, socioeconomic status was a confounding variable in the this study. This heatmap shows that there are strong,positive trends with the low birth weight and births from teenage mothers for all ethnic groups. 
+
+In the second figure, I created a 3 variable plot that showed how the black population in Texas counties had low birth weights and births to teen mothers. We can see a positive trend in the chart and that larger counties had more births, but nearly at the same proportion as the smaller counties. One really cool piece of data that I wish I had with this set would be the access/distance to a physician, since this could also be a result of people living in medical deserts in rural counties. I would love to follow up on this! 
+
+In Figure 3, it shows a side-by-side bar chart that shows the Texas counties for low birth weights per ethnic group and total. We can see that from this chart, that Hispanics have more underweight born infants... very interesting. Perhaps there are more Hispanics in these areas or other confounding variables. I was pleased to find that all three figures provided strong, positive relationships that helped us make to some conclusions as well as form questions for future studies.    
+
+
+## 5. Dimensionality Reduction
+
+```{R}
+#kMean
+joinalbwbmy
+joinalbwbmy %>% select(2,6)->clust_dat
+kmeans1<-clust_dat %>% kmeans(5)
+kmeans1
+
+library(cluster)
+sil_width<-vector()
+for(i in 2:10){
+  kms <- kmeans(clust_dat,centers=i) 
+  sil <- silhouette(kms$cluster,dist(clust_dat))
+  sil_width[i]<-mean(sil[,3]) 
+  }
+ggplot()+geom_line(aes(x=1:10,y=sil_width))+scale_x_continuous(name="k",breaks=1:10)+ labs(title="Silhouette Width in k-means")
+
+kmeansclust<-clust_dat %>% mutate(cluster=as.factor(kmeans1$cluster))
+kmeansclust %>% ggplot(aes(Total_Low_BW,TOTAL_Births_M17,color=cluster))+geom_point()+labs(title="Clusters k-means")
+```
+
+
+```{R}
+#PAM
+joinalbwbmy
+joinalbwbmy %>% select(-COUNTY,-TOTAL_Births_M17,-HISPANIC_Births_M17,-Total_Low_BW,-HISPANIC_Low_BW)->clust_dat1
+clust_dat1
+pam3<-clust_dat1 %>% scale %>% pam(5)
+pam3
+final1<-joinalbwbmy %>% mutate(cluster=as.factor(pam3$clustering))
+ggplot(final1,aes(WHITE_Low_BW,BLACK_Births_M17,color=cluster))+geom_point()+labs(title="Clusters PAM")
+joinalbwbmy %>% slice(pam3$id.med)
+pam3$silinfo$avg.width
+library(tidyverse)
+library(plotly)
+final1 %>% plot_ly(x=~WHITE_Low_BW,y=~BLACK_Births_M17,z=~WHITE_Births_M17, color=~cluster,type="scatter3d", mode="markers")
+```
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+
+For the last section of this report, I tasked to conduct a dimensional reduction. I used conducted a k-means clustering. First, I selected my variables of interest and needed to determine the number of clusters. I first started off with k=2,which gave me two clusters; however, that was just with the Within Cluster Sums of Squares (WSS). In order for a better analysis, I picked the amount of clusters by using a silhouette width, which includes both WSS and Between Cluster Sums of Squares (BSS). This was very effective since it can interpret both in one test. I created a loop that tested the k-means between 2 and 10 and took those numbers with the silhouette width and averages of those widths. I found that k=2 was the highest average silhouette width, but I went with k=5 clusters since it was still very high (~0.83) and produced the best clusters for this specific analysis. K-means is very sensitive to outliers, so I then proceeded with this investigation by using a Partitioning around Medoids (PAM), which is better for this investigation and for multiple variables, numeric and categorical. I selected k for my datapoints to be the initial starting cluster then repeated again after a new central observation centralized the clusters. I compared to see the how the ethnic groups (White and Black) were plotted for the number of underweight born infants and the number of births to teenage mothers. We can see from our data, that cluster 5 has the highest birth numbers for birth of these clusters. From the 2-D figure, we plotted each cluster and did not find too much of a difference between our clusters from k-means, but we can see that the PAM clusters are more defined and centralized in the lower left hand corner as compared to the k-means chart. Clusters 1, 2, 3 appear to have the lowest number of births to underweight and teen mothers in their counties. One super interesting find was when I calculated the final medoids for PAM, which produced the counties for the five categories (1-5) were Howard, Karnes, Midland, Denton, Dallas, respectively. From our outside knowledge, we can conclude that these clusters are centralizing on these counties and are similar to counties/demographics of those areas. Lastly, from our 3-D model, we obtained a Goodness of Fit silhouette width of 0.56 for the 5 clusters, which means it is a reasonable cluster structure.    

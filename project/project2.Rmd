@@ -1,0 +1,238 @@
+---
+title: "Project_2"
+author: "Victor Brian Chavez"
+date: "5/4/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 0. Introduction
+
+The dataset I selected contains variables that could contribute to strokes. This dataset includes gender, age, hypertension, marital status, occupation, residence, average blood glucose, BMI, and smoking status. In this study, we will see how these different factors contribute to strokes and by how much. These variables will help measure the significance of interaction between them and if they are connected to strokes. There are a total of 100 observations. This project is very meaningful to me because my grandfather who I grew up with passed away after a stroke before I left to college. He is the reason I want to pursue a career in medicine. I hope I can make some conclusions at the end of this project to have a better understand of factors that contribute to strokes.
+
+
+## 1. MANOVA
+
+```{R}
+library(tidyverse)
+strokedata<-read.csv("healthcare-dataset-stroke-data-c.csv")
+library(ggplot2)
+ggplot(strokedata, aes(x = avg_glucose_level, y = bmi)) +
+  geom_point(alpha = .5) + geom_density_2d(h=2) + coord_fixed() + facet_wrap(~stroke)
+
+library(rstatix)
+group1<- strokedata$stroke
+DVs1 <- strokedata %>% select(avg_glucose_level,bmi,age)
+sapply(split(DVs1,group1),mshapiro_test)
+box_m(DVs1, group1)
+
+man1<-manova(cbind(avg_glucose_level,bmi)~stroke, data=strokedata)
+summary(man1)
+summary.aov(man1)
+strokedata %>% group_by(stroke) %>% summarize(mean(avg_glucose_level),mean(bmi))
+pairwise.t.test(strokedata$avg_glucose_level,strokedata$stroke,p.adj="none")
+pairwise.t.test(strokedata$bmi,strokedata$stroke,p.adj="none")
+
+1-(0.95)^5
+0.05/5
+```
+
+*A one-way MANOVA was performed to determine the effect of the stroke history (0=No, 1=Yes) on two dependent variables (Average Glucose Level and BMI). Examination of bivariate density plots led us to find that each group revealed stark departures from multivariate normality. Examination of covariance matrices for each group did not reveal relative homogeneity. The MANOVA was considered to not be appropriate analysis technique since many of our assumptions were not met; however, we continued to run further tests. Before, the significant difference were found among the stroke history patients for at least one of the dependent variables, p<0.05. Univariate ANOVAs for each dependent variable were conducted as a follow up and using the Bonferroni to count for Type 1 Error(a=0.05/5), since we performed 1 MANOVA, 2 ANOVAs, and 2 pairwise t test, a total of 5 tests. The probability of getting a Type 1 Error would be 0.226. For the univariate ANOVAs and t test, only the BMI t test was no significant before counting for error. After accounting for the adjustments with the new p value of 0.01, there was no significance found for any of the comparisons.*
+
+
+## 2. Randomization Test
+
+```{R}
+ggplot(strokedata,aes(avg_glucose_level,fill=Residence_type))+geom_histogram(bins=6.5)+facet_wrap(~Residence_type,ncol=2)
+strokedata %>% group_by(Residence_type) %>% summarize(means=mean(avg_glucose_level)) %>% summarize('mean_diff:'=diff(means))
+
+rand_dist<-vector()
+for(i in 1:5000){
+new1<-data.frame(avg_glucose_level=sample(strokedata$avg_glucose_level),Residence_type=strokedata$Residence_type)
+rand_dist[i]<-mean(new1[new1$Residence_type=="Urban",]$avg_glucose_level)-mean(new1[new1$Residence_type=="Rural",]$avg_glucose_level)}
+{hist(rand_dist,main="",ylab=""); abline(v = c(-19.79525, 19.79525),col="red")}
+mean(rand_dist>19.79525 | rand_dist < -19.79525)
+t.test(data=strokedata,avg_glucose_level~Residence_type)
+```
+
+*I performed a randomization test that determined the mean difference of Average Glucose Level and Residence Type.*
+*Null Hypothesis: mean glucose level is the same for rural and urban patients. Alternative Hypothesis: mean glucose level is different for rural and urban patients.*
+*We calculated the mean difference between the two residence groups by randomly running 5000 permutations. The calculated p value for the probability of observing an extreme greater than 19.79525 under randomization distribution was 0.0986. Our results indicate that we cannot reject the null hypothesis in that there is approximately a 10% chance that we could get a value of 19.79525 this extreme as the actual mean difference. Since the p value is too large, there is no true mean difference in the population. From the plot above, we can see this interpretation from the null distribution.*
+
+
+## 3. Linear Regression Model
+
+```{R}
+library(lmtest)
+library(sandwich)
+data.frame(avg_glucose_level_c=strokedata$avg_glucose_level-mean(strokedata$avg_glucose_level))
+strokedata$avg_glucose_level_c<-strokedata$avg_glucose_level-mean(strokedata$avg_glucose_level)
+fit<-lm(age~avg_glucose_level_c*stroke,data = strokedata)
+summary(fit)
+
+ggplot(strokedata, aes(y=age, x=avg_glucose_level_c,group=stroke))+geom_point(aes(color=stroke))+  geom_smooth(method="lm",formula=y~1,se=F,fullrange=T,aes(color=stroke))+theme(legend.position=c(.9,.2))+xlab("Glucose_Level_c")+geom_vline(xintercept=0,lty=2)
+
+resids<-fit$residuals; fitvals<-fit$fitted.values
+ggplot()+geom_point(aes(fitvals,resids))+geom_hline(yintercept=0, col="red")
+ks.test(resids, "pnorm", sd=sd(resids))
+
+samp_distn<-replicate(5000, {
+  boot_dat<-boot_dat<-strokedata[sample(nrow(strokedata),replace=TRUE),]
+  fit<-lm(age ~ avg_glucose_level_c * stroke, data=boot_dat)  
+  coef(fit) 
+  })
+samp_distn%>%t%>%as.data.frame%>%summarize_all(sd)
+coeftest(fit)[,1:2] #Normal_SE
+coeftest(fit, vcov=vcovHC(fit))[,1:2] #Robust_SE
+```
+
+*I ran a linear regression model that predicted the interaction between the mean centered glucose level and stroke status of patients to determine its effects with age. We will test whether stroke status has an effect with age by the mean glucose level. From the coefficients, we can see that the mean age for someone with no stroke history and average glucose levels will be an age of 51.8. Additionally, patients with stroke history status with average glucose levels are predicted to be 16 years more than those with no stroke history, showing significance. This means that the older one is the more likely of a stroke status, which make sense. Moreover, we see that glucose levels are significantly paired with age for those with no strokes; thus as glucose level increases by one, that patients age will increase by 0.178. Lastly, the coefficient for the interaction variables show significance in that the slope of glucose levels on age for patients with stroke history is 0.128 significantly lesser than patients with no stroke history. This was truly fascinating in that I expected the slope to be greater(positive) and stronger for stroke patients, since strokes and high glucose could potentially be seen to increase as one gets older; however these results prove otherwise. Our adjusted R squared value gives the proportion explained by the regression. Here, we see that the model accounts for 35.75% of the variation, while 64.25% is to randomness or other confounding factors. To check for met assumptions, I made a graph to see linearity and homoskedastically; however, the points were very spread out and there was also a clustered region; therefore I came to the conclusion that it failed to meet these assumptions. Also, I ran a One-sample Kolmogorov-Smirnov test that check for normality, and this failed to meet the assumption as well with a large p value of 0.3835. Afterwards, we recomputed the regression results and compared the normal theory standard errors to the robust standard errors. We can see that the robust standard errors are larger for all the comparisons, while the estimates remain constant. Therefore, we can conclude that the before SE are more specific (less conservative) in range as compared to the after, robust SE. These SE results line up with the violated assumptions, since it is heteroskedastic we should use robust standard errors!*
+
+## 4. Bootstraped
+
+```{R}
+fit<-lm(age~avg_glucose_level+stroke,data=strokedata) 
+resids<-fit$residuals
+fitted<-fit$fitted.values
+
+resid_resamp<-replicate(5000,{
+  new_resids<-sample(resids,replace=TRUE)
+  strokedata$new_y<-fitted+new_resids 
+  fit<-lm(new_y~avg_glucose_level+stroke,data=strokedata)
+  coef(fit)
+  })
+resid_resamp%>%t%>%as.data.frame%>%summarize_all(sd) #Bootstrapped_SE
+
+coeftest(fit)[,1:2] #Normal_SE
+coeftest(fit, vcov=vcovHC(fit))[,1:2] #Robust_SE
+
+```
+
+*I re-ran the same regression model and computed the bootstrapped standard errors (residuals) to compare to the robust and normal standard errors. I chose to use the residuals rather than the rows because I wanted to produce a standard error that was more liberal(specific) rather than conservative with a larger value. After comparing all the standard errors (normal, robust, bootstrapped), it was reported that the standard errors for the bootstrapped residuals were smaller for our intercept and stroke. There was a surprising find in that our robust SE was the smaller than the normal and bootstrapped SE for average glucose level.*
+
+
+## 5. Logistic Regression Model (2 variable)
+
+```{R} 
+class_diag<-function(probs,truth){
+  
+tab<-table(factor(probs>0.5,levels=c("FALSE","TRUE")),truth)
+  acc=sum(diag(tab))/sum(tab)
+  sens=tab[2,2]/colSums(tab)[2]
+  spec=tab[1,1]/colSums(tab)[1]
+  ppv=tab[2,2]/rowSums(tab)[2]
+  
+  if(is.numeric(truth)==FALSE & is.logical(truth)==FALSE)
+    truth<-as.numeric(truth)-1
+  
+  ord<-order(probs,decreasing=TRUE)
+  probs<-probs[ord];truth<-truth[ord]
+  
+TPR=cumsum(truth)/max(1,sum(truth))
+FPR=cumsum(!truth)/max(1,sum(!truth))
+dup<-c(probs[-1]>=probs[-length(probs)],FALSE)
+TPR<-c(0,TPR[!dup],1);FPR<-c(0,FPR[!dup],1)
+
+n<-length(TPR)
+auc<-sum(((TPR[-1]+TPR[-n])/2)*FPR[-1]-FPR[-n])
+
+data.frame(acc,sens,spec,ppv,auc)
+}
+    
+fit<-glm(stroke~age+bmi+avg_glucose_level,data=strokedata,family = "binomial")
+exp(coeftest(fit))
+
+probs<-predict(fit,type="response")
+table(predict=as.numeric(probs>0.5),truth=strokedata$stroke) %>% addmargins()
+class_diag(probs,strokedata$stroke)
+
+strokedata$logit<-predict(fit,type="link")
+strokedata$Stroke<-factor(strokedata$stroke,levels=c("1","0"))
+ggplot(strokedata,aes(logit,fill=Stroke))+geom_density(alpha=0.5)+geom_vline(xintercept=0)
+
+library(plotROC)
+ROCplot<-ggplot(strokedata)+geom_roc(aes(d=stroke,m=probs), n.cuts=0); ROCplot
+calc_auc(ROCplot)
+```
+
+*We determined from this logical regression predicting stroke from Age, BMI, and Average Glucose Level. Every one unit increase in Age multiples the odds by a factor of 1.0743. Every one unit increase in BMI multiples the odds by a factor of 0.9996. Every one unit increase in Glucose Level multiples the odds by a factor of 1.0026. However, looking at the results, we can see the that p values are not significant for both the intercept, age, BMI, and average glucose level meaning there could be errors and other factors affecting these results showing no predictability. We found the Accuracy, Sensitivity (TPR), Specificity (TNR), Precision (PPV), and AUC of this model, all producing 0.72, with the exception of AUC being 0.7988. This means that AUC is predicting overall how well our model is giving it a fair grade. From our density plot, we can see that there is overlap, but still a difference in densities of stroke status to determine it. A ROC curve was created that represents the connections between sensitivity and specificity. Additionally, our figure above has an AUC of 0.7988 produces a fair grade for our model.*
+
+
+## 6. Logistic Regression Model (ALL)
+
+```{R}
+strokedata1<-strokedata%>%select(-avg_glucose_level_c)%>% select(-work_type) %>% select(-logit) %>% select(-Stroke)
+fit70<-glm(stroke~(.), data=strokedata1, family="binomial")
+prob70<-predict(fit70,type="response")
+class_diag(prob70,strokedata1$stroke)
+
+k=10
+set.seed(348)
+
+data <- strokedata1 %>% sample_frac 
+folds <- ntile(1:nrow(data),n=10) 
+
+diags<-NULL
+for(i in 1:k){
+  train <- data[folds!=i,]
+  test <- data[folds==i,] 
+  truth <- test$stroke 
+  
+  fit <- glm(stroke~(.), data=train, family="binomial")
+  probs <- predict(fit, newdata=test, type="response")  
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+summarize_all(diags,mean)
+
+library(glmnet)
+y<-as.matrix(strokedata1$stroke)
+x<-model.matrix(stroke~.,data=strokedata1)[,-1]
+cv <- cv.glmnet(x,y)
+{plot(cv$glmnet.fit, "lambda", label=TRUE); abline(v = log(cv$lambda.1se)); abline(v = log(cv$lambda.min),lty=2)}
+cv<-cv.glmnet(x,y,family="binomial")
+lasso<-glmnet(x,y,family="binomial",lambda=cv$lambda.1se)
+coef(lasso)
+
+
+set.seed(348)
+k=10
+data <- strokedata1 %>% sample_frac
+folds <- ntile(1:nrow(data),n=10)
+diags<-NULL
+for(i in 1:k){
+  train <- data[folds!=i,]
+  test <- data[folds==i,]
+  truth <- test$stroke
+  fit <- glm(stroke~age,data=train, family="binomial")
+  probs <- predict(fit, newdata=test, type="response")
+  diags<-rbind(diags,class_diag(probs,truth))
+}
+diags%>%summarize_all(mean)
+```
+
+*In our final test, we conducted a logistic regression model that predicted stroke for a patient using all of our variables. To test all of these variables, we created a fit model that produced an Accuracy (0.76), Sensitivity(0.76), Specificity(0.76), Precision(0.76), and an AUC (-2.8926). From this model, we can't interpret that the AUC since it is extremely bad! Additionally, we can see that the proportion of correctly classified is the same as the proportion of stroke(TPR) vs non-stroke(TNR) classified patient in their respective proportions. Next, we performed a 10 fold CV and found that all of our diagnostics (acc,sens,spec,ppv,auc) all decreased significantly. This simpler model performed much better and its AUC grade is now bad (0.0124) as compared to the previous AUC which was a -2.8926. Following this, we performed a LASSO on the same variables and from our matrix we were able to determine that the only contributing variable is AGE! We can conclude from our lasso that age is the most important predictor for determining stroke. We then followed up with a new 10-fold CV only using age. Surprisingly, we found our diagnostics to increase. Sadly, our AUC grade is still bad(0.3143), but when compared to the extremely bad AUC from the ALL variable 10-fold CV, it is much better and allows use to gain a greater insight into these results! Lastly, we can also see that our sensitivity increased the greatest from the previous examination.*
+
+
+## Conclusion & Personal Statement
+
+Though we did not find much significance from our variables, we were able to determine that age does have an effect on predictability for strokes. As I reflect on my personal experience, I would like to state that this project was one of the most meaningful studies I have ever done. This project is dedicated to my grandfather who played an instrumental role in my life. I was disappointed to not find more variables that could have contributed to strokes, but perhaps I could use this as motivation to continue this investigation in the future.
+
+
+```{R}
+knitr::include_graphics("family.jpg")
+```
+
+
+
+
+
+
+
+
+
+
+
+

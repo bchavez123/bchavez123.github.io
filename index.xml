@@ -39,7 +39,8 @@ python=&amp;quot;Programming&amp;quot; cool=&amp;quot; Legend&amp;quot; python+c
       <description> Python and R are similar yet different programming techniques. The coding and software used can create incredible and fun data! To combine and work with both, we will use reticulate packages. Check out this example!
 In R
 library(reticulate) help_me&amp;lt;-&amp;quot;Learn How&amp;quot; In Python
-help_me=&amp;quot;To Code&amp;quot; print(r.help_me,help_me) ## Learn How To Code cat(c(help_me,py$help_me)) ## Learn How To Code </description>
+help_me=&amp;quot;To Code&amp;quot; print(r.help_me,help_me) ## Learn How To Code In R
+cat(c(help_me,py$help_me)) ## Learn How To Code </description>
     </item>
     
     <item>

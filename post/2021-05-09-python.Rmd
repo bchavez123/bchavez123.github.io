@@ -5,8 +5,10 @@ date: 2021-05-09T21:13:14-05:00
 categories: []
 ---
 
-Python Demonstration
+This blog post will will demonstrate some examples of code used in Python.
+Python is software that is easy to learn and is very popular at the moment. It can be used to create graphs, charts, tables, and create significant research findings! Let's take a look of some simple examples.
 
+Python Demonstration:
 
 Making a Dataset
 

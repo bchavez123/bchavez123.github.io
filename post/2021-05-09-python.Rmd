@@ -1,0 +1,49 @@
+---
+title: "Python"
+author: "Brian Chavez"
+date: 2021-05-09T21:13:14-05:00
+categories: []
+---
+
+Python Demonstration
+
+
+Making a Dataset
+
+```{python}
+dataset1=[10,20,30,40,50]
+dataset2=[60,70,80,90,100]
+dataset1
+dataset2
+```
+
+Combining Sets
+
+```{python}
+dataset3=dataset1+dataset2
+dataset3
+```
+
+Creating Arrays in Python
+
+```{python}
+import numpy as np
+evennum=np.array([2,4,6,8])
+evennum
+```
+
+```{python}
+print(evennum/6*42)
+```
+
+Strings
+
+```{python}
+python="Programming"
+cool=" Legend"
+python+cool
+```
+
+
+
+

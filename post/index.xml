@@ -13,18 +13,33 @@
       <pubDate>Sun, 09 May 2021 21:13:14 -0500</pubDate>
       
       <guid>/post/2021/05/09/get-to-know-me/</guid>
-      <description>I am from Port Isabel, Texas, a small town on the southern Gulf Coast, where I graduated as valedictorian of Port Isabel High School. There, I founded the school’s first pre-medical organization, Future Health Careers Club, and was the president of the Student Body, National Honor Society, and Rotary Interact Club. I earned All-State Academic Elite Football Team Highest Honors and two State Championships in UIL Spelling and Vocabulary. At The University of Texas, I am majoring in Biology in the Health Science Scholars Honors Program with a minor in Kinesiology and Health Education.</description>
+      <description>I am from Port Isabel, Texas, a small town on the southern Gulf Coast, where I graduated as valedictorian of Port Isabel High School. There, I founded the school’s first pre-medical organization, Future Health Careers Club, and was the president of the Student Body, National Honor Society, and Rotary Interact Club. I earned All-State Academic Elite Football Team Highest Honors and two State Championships in UIL Spelling and Vocabulary.</description>
     </item>
     
     <item>
-      <title>Hello R Markdown</title>
-      <link>/post/2015/07/23/hello-r-markdown/</link>
-      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      <title>Python</title>
+      <link>/post/2021/05/09/python/</link>
+      <pubDate>Sun, 09 May 2021 21:13:14 -0500</pubDate>
       
-      <guid>/post/2015/07/23/hello-r-markdown/</guid>
-      <description>R Markdown This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see http://rmarkdown.rstudio.com.
-You can embed an R code chunk like this:
-summary(cars) ## speed dist ## Min. : 4.0 Min. : 2.00 ## 1st Qu.:12.0 1st Qu.: 26.00 ## Median :15.0 Median : 36.00 ## Mean :15.4 Mean : 42.98 ## 3rd Qu.</description>
+      <guid>/post/2021/05/09/python/</guid>
+      <description> Python Demonstration
+Making a Dataset
+dataset1=[10,20,30,40,50] dataset2=[60,70,80,90,100] dataset1 ## [10, 20, 30, 40, 50] dataset2 ## [60, 70, 80, 90, 100] Combining Sets
+dataset3=dataset1+dataset2 dataset3 ## [10, 20, 30, 40, 50, 60, 70, 80, 90, 100] Creating Arrays in Python
+import numpy as np evennum=np.array([2,4,6,8]) evennum ## array([2, 4, 6, 8]) print(evennum/6*42) ## [14. 28. 42. 56.] Strings
+python=&amp;quot;Programming&amp;quot; cool=&amp;quot; Legend&amp;quot; python+cool ## &amp;#39;Programming Legend&amp;#39; </description>
+    </item>
+    
+    <item>
+      <title>Python and R</title>
+      <link>/post/2021/05/09/python-and-r/</link>
+      <pubDate>Sun, 09 May 2021 21:13:14 -0500</pubDate>
+      
+      <guid>/post/2021/05/09/python-and-r/</guid>
+      <description> Python and R are similar yet different programming techniques. The coding and software used can create incredible and fun data! To combine and work with both, we will use reticulate packages. Check out this example!
+In R
+library(reticulate) help_me&amp;lt;-&amp;quot;Learn How&amp;quot; In Python
+help_me=&amp;quot;To Code&amp;quot; print(r.help_me,help_me) ## Learn How To Code cat(c(help_me,py$help_me)) ## Learn How To Code </description>
     </item>
     
   </channel>

@@ -1,0 +1,25 @@
+---
+title: "Python and R"
+author: "Brian Chavez"
+date: 2021-05-09T21:13:14-05:00
+categories: []
+---
+
+Python and R are similar yet different programming techniques. The coding and software used can create incredible and fun data! To combine and work with both, we will use reticulate packages. Check out this example! 
+
+In R
+```{R}
+library(reticulate)
+help_me<-"Learn How"
+```
+
+In Python
+```{python}
+help_me="To Code"
+print(r.help_me,help_me)
+```
+
+```{R}
+cat(c(help_me,py$help_me))
+```
+![](/post/2021-05-09-python-and-r_files/IMG_6008.JPG)
